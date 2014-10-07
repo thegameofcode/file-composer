@@ -1,0 +1,30 @@
+{
+  "name": "file-composer",
+  "version": "1.0.4",
+  "description": "Templating engine for the filesystem",
+  "main": "lib/file-composer.js",
+  "bin": {
+    "file-composer": "bin/file-composer"
+  },
+  "preferGlobal": true,
+  "scripts": {
+    "test": "mocha test/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IGZJavierPerez/file-composer.git"
+  },
+  "author": "IGZJavierPerez <surtich@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IGZJavierPerez/file-composer/issues"
+  },
+  "homepage": "https://github.com/IGZJavierPerez/file-composer",
+  "dependencies": {
+    "yargs": "^1.3.2"
+  },
+  "devDependencies": {
+    "chai": "^1.9.2",
+    "sinon": "^1.10.3"
+  }
+}
