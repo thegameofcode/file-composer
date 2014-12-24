@@ -240,5 +240,42 @@ describe('file-composer tests', function() {
 				});
 			});
 		});
+	  describe('times tests', function() {
+			it('should repeat the include twice', function() {
+				test('Foo!include(level1, {times: 2})', 'FooBarBar', {
+					level1: 'Bar'
+				});
+			});
+			it('should repeat the include four times', function() {
+				test('Foo!include(level1, {times: 4})', 'FooBarBarBarBar', {
+					level1: 'Bar'
+				});
+			});
+
+			it('should repeat spaces and lineBreaks twice', function() {
+				test('Foo!include(level1, {times: 2, spaces: 2, lineBreaks: 1})', 'Foo\n  Bar\n  Bar', {
+					level1: 'Bar'
+				});
+			});
+			it('should repeat twice include files of three levels', function() {
+			  test('Foo!include(level1, {times: 2})', 'FooBarBazQuxBarBazQux', {
+				  level1: 'Bar!include(level2)',
+				  level2: 'Baz!include(level3)',
+				  level3: 'Qux'
+			  });
+		  });
+		  it('should repeat twice include files of three levels (with times:2 parameter)', function() {
+			  test('Foo!include(level1, {times: 2})', 'FooBarBazQuxQuxBazQuxQuxBarBazQuxQuxBazQuxQux', {
+				  level1: 'Bar!include(level2, {times: 2})',
+				  level2: 'Baz!include(level3, {times: 2})',
+				  level3: 'Qux'
+			  });
+		  });
+		  it('should replace twice the include param', function() {
+			test('Foo!include(level1, {times:2, values: { param1:"Baz" }})', 'FooBarBazBarBaz', {
+				level1: 'Bar{{ param1 }}'
+			});
+		});
+    });
 	});
 });
