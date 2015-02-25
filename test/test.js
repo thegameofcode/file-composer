@@ -277,5 +277,32 @@ describe('file-composer tests', function () {
         });
       });
     });
+    describe('param expression tests', function () {
+      it('should eval a simple expression', function () {
+        test('Foo!eval(1 + 4)!lave', 'Foo5');
+      });      
+      it('should eval a complex arithmetic expression', function () {
+        test('Foo!eval(2 * (4 + 1) )!lave', 'Foo10');
+      });      
+      it('should eval a simple function expression call', function () {
+        test('Foo!eval((function() { return 1 + 4 ; })() )!lave', 'Foo5');
+      });
+      it('should eval two simple expressions', function () {
+        test('Foo!eval(1 + 4)!lave!eval(3 * 5)!lave', 'Foo515');
+      });
+      it('should eval core JavaScript functions', function () {
+        test('Foo!eval([1, 2, 3].join(""))!lave', 'Foo123');
+      });
+      it('should eval in one level expressions', function () {
+        test('Foo !include(level1)', 'Foo 6', {
+          level1: '!eval(2 + 4)!lave'
+        });
+      });
+      it('should eval in one level expressions with params', function () {
+        test('Foo !include(level1, { values: {value1: 1, value2: 5} })', 'Foo 6', {
+          level1: '!eval({{ value1 }} + {{ value2 }})!lave'
+        });
+      });
+    });
   });
 });
