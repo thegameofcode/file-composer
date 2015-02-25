@@ -37,6 +37,13 @@ npm install -g file-composer
 file-composer -i example/main.txt -o example/output.txt --base=example
 ```
 
+Or to replace defined params:
+
+```bash
+file-composer -i example/main.txt -o example/output.txt --base=example -v param1:123
+```
+
+
 ## To use as a dependency
 
 ```bash
