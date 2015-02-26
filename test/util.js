@@ -24,11 +24,11 @@ function test(inputText, expectedOutputText, includeFiles, options) {
   options = options || {};
   options.i = 'input.txt';
   options.o = 'out.txt';
+  options.f = __dirname + '/gen.js';
 
   render(options);
 
   assert.equal(fs.writeFile.getCall(0).args[1], expectedOutputText);
-
 }
 
 module.exports = {

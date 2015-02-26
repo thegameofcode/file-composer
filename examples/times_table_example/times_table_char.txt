@@ -1,2 +1,1 @@
-Foo
-    !include(file1.txt, {values: {param1: "Baz"}})
+Times Table Chart [from {{from || 1}} to {{to || 10}}]  !include(table.txt, {lineBreaks:1, values: { table: "{{!rangeGen {{from || 1}} {{to || 10}} 1}}" } })

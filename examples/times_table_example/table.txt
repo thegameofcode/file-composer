@@ -1,2 +1,1 @@
-Foo
-    !include(file1.txt, {values: {param1: "Baz"}})
+Table of {{table || 1}}!include(row.txt, {lineBreaks:1, values: { times: "{{!rangeGen {{from || 1}} {{to || 10}} 1}}" } })

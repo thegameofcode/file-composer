@@ -139,13 +139,13 @@ describe('file-composer tests', function () {
       });
     });
 
-    it('should replace ok when the same file is included twice with different param values', function () {
+    it('should replace when the same file is included twice with different param values', function () {
       test('Foo!include(level1, { values: { param1:"Baz" }})!include(level1, { values: { param1:"Qux" }})', 'FooBarBazBarQux', {
         level1: 'Bar{{ param1 }}'
       });
     });
 
-    it('should replace ok when the same file is included twice from diferents files with different param values', function () {
+    it('should replace when the same file is included twice from diferents files with different param values', function () {
       test('Foo!include(level1a)!include(level1b)!include(level1c)', 'FooLevel1aLevel2BarLevel1bLevel2BazLevel1cLevel2Qux', {
         level1a: 'Level1a!include(level2, { values: { param1: "Bar"} })',
         level1b: 'Level1b!include(level2, { values: { param1: "Baz"} })',
@@ -171,11 +171,45 @@ describe('file-composer tests', function () {
     it('should prior command line arguments', function () {
       test('Foo!include(level1, { values: { param1: "Qux"}})', 'FooBarBaz', {
         level1: 'Bar!include(level2)',
-        level2: '{{ param1 }}'
+        level2: '{ { param1 } }'
       }, {
         v: 'param1:Baz'
       });
+
     });
+    
+    it('should replace one param inside other param at first level file', function () {
+      test('Foo!include(level1, { values: { param1:"Baz", param2: "{{param1}}" }})', 'FooBarBaz', {
+        level1: 'Bar{{ param2 }}'
+      });
+    });
+    
+    it('should replace one param inside other compose param at first level file', function () {
+      test('Foo!include(level1, { values: { paramX:"Baz", paramY: "{{paramX}}{{paramX}}FooBar" }})', 'FooBarBazBazFooBar', {
+        level1: 'Bar{{ paramY || Foo }}'
+      });
+    });
+    
+    it('should replace one param inside other param at second level file', function () {
+      test('Foo!include(level1, { values: { param1:"Baz", param2: "{{param1}}" }})', 'FooBarBaz', {
+        level1: '!include(level2)',
+        level2: 'Bar{{ param2 }}'
+      });
+    });
+    
+    it('should replace one param inside other param at second level file (the inside param is defined at second level)', function () {
+      test('Foo!include(level1, { values: { param1:"Baz"}})', 'FooBarBaz', {
+        level1: '!include(level2, { values: {param2: "{{param1}}" }})',
+        level2: 'Bar{{ param2 }}'
+      });
+    });
+    
+    it('should replace one param inside other param inside other parem at first level file', function () {
+      test('Foo!include(level1, { values: { param1:"Baz", param2: "{{param1}}", param3: "{{param2}}" }})', 'FooBarBaz', {
+        level1: 'Bar{{ param3 }}'
+      });
+    });
+    
 
     describe('space and lineBreak tests', function () {
       it('should keep spaces of top file', function () {
@@ -279,28 +313,58 @@ describe('file-composer tests', function () {
     });
     describe('param expression tests', function () {
       it('should eval a simple expression', function () {
-        test('Foo!eval(1 + 4)!lave', 'Foo5');
-      });      
+        test('Foo!eval(1 + 4)_eval', 'Foo5');
+      });
       it('should eval a complex arithmetic expression', function () {
-        test('Foo!eval(2 * (4 + 1) )!lave', 'Foo10');
-      });      
+        test('Foo!eval(2 * (4 + 1) )_eval', 'Foo10');
+      });
       it('should eval a simple function expression call', function () {
-        test('Foo!eval((function() { return 1 + 4 ; })() )!lave', 'Foo5');
+        test('Foo!eval((function() { return 1 + 4 ; })() )_eval', 'Foo5');
       });
       it('should eval two simple expressions', function () {
-        test('Foo!eval(1 + 4)!lave!eval(3 * 5)!lave', 'Foo515');
+        test('Foo!eval(1 + 4)_eval!eval(3 * 5)_eval', 'Foo515');
       });
       it('should eval core JavaScript functions', function () {
-        test('Foo!eval([1, 2, 3].join(""))!lave', 'Foo123');
+        test('Foo!eval([1, 2, 3].join(""))_eval', 'Foo123');
       });
       it('should eval in one level expressions', function () {
         test('Foo !include(level1)', 'Foo 6', {
-          level1: '!eval(2 + 4)!lave'
+          level1: '!eval(2 + 4)_eval'
         });
       });
       it('should eval in one level expressions with params', function () {
         test('Foo !include(level1, { values: {value1: 1, value2: 5} })', 'Foo 6', {
-          level1: '!eval({{ value1 }} + {{ value2 }})!lave'
+          level1: '!eval({{ value1 }} + {{ value2 }})_eval'
+        });
+      });
+    });
+    describe('param function generator', function () {
+      it('should include values until the generator is exhausted', function () {
+        test('Foo!include(level1, { values: {fruit: "{{!fruitGen}}" }})', 'FooAppleOrangePear', {
+          level1: '{{fruit}}'
+        });
+      });
+      it('can receive parameters', function () {
+        test('Foo!include(level1, { values: {fruit: "{{!fruitGen2 Apple Orange Pear}}" }})', 'FooAppleOrangePear', {
+          level1: '{{fruit}}'
+        });
+      });
+      it('can receive parameters at second level', function () {
+        test('Foo!include(level1, { values: {fruit: "{{!fruitGen2 Apple Orange Pear}}" }})', 'FooAppleOrangePear', {
+          level1: '!include(level2)',
+          level2: '{{fruit}}'
+        });
+      });
+      it('can use evaluable expressions', function () {
+        test('Foo!include(level1, { values: {fruit: "{{!fruitGen2 Apple Orange Pear}}" }})', 'FooApple1Orange1Pear1', {
+          level1: '!include(level2)',
+          level2: '!eval("{{fruit}}1")_eval'
+        });
+      });
+      it('can receive parameterized parameters at second level', function () {
+        test('Foo!include(level1, {values: { anotherFruit: "Melon" } })', 'FooAppleOrangePearMelon', {
+          level1: '!include(level2, { values: {fruit: "{{!fruitGen2 Apple Orange Pear {{anotherFruit}} }}" }})',
+          level2: '{{fruit}}'
         });
       });
     });

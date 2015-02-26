@@ -4,15 +4,17 @@
 var argv = require('yargs')
         .usage('Generates a unique file from multiple includes.\nUsage: $0 -i input -o output')
         .example('$0 -i ./input.txt -o ./output.txt', 'compile the template')
-        .demand(['i', 'o'])
+        .demand(['i'])
         .alias('i', 'input')
         .alias('o', 'output')
         .alias('v', 'value')
         .alias('b', 'base')
+        .alias('f', 'script')
         .describe('i', 'input file')
         .describe('o', 'output file')
         .describe('v', 'value replacement')
         .describe('b', 'base path for the includes')
+        .describe('f', 'valid functions file (ex. for generator functions)')
         .default('b', './')
         .argv;
 

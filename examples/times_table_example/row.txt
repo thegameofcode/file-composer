@@ -1,2 +1,1 @@
-Foo
-    !include(file1.txt, {values: {param1: "Baz"}})
+  {{times || 1}} x {{table || 1}} = !eval({{times || 1}} * {{table || 1}})_eval
