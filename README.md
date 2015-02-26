@@ -23,7 +23,7 @@ Foo
     Baz
 ```
 
-[Complete example](https://github.com/thegameofcode/file-composer/tree/master/examples/times_table_example)
+[Complete example](https://github.com/thegameofcode/file-composer/tree/master/examples/conditional_times_table_example)
 
 [More examples](https://github.com/IGZJavierPerez/file-composer/blob/master/test/test.js)
 

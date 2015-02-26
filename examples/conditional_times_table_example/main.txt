@@ -1,0 +1,2 @@
+Conditional Times Table Chart [from {{from}} to {{to}} skips odds, hides odd times]
+!include(table.txt, {if: "{{table}} % 2 === 0", values: {table: "{{!range {{from}} {{to}} 1}}" } })

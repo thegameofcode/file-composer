@@ -177,39 +177,38 @@ describe('file-composer tests', function () {
       });
 
     });
-    
+
     it('should replace one param inside other param at first level file', function () {
       test('Foo!include(level1, { values: { param1:"Baz", param2: "{{param1}}" }})', 'FooBarBaz', {
         level1: 'Bar{{ param2 }}'
       });
     });
-    
+
     it('should replace one param inside other compose param at first level file', function () {
       test('Foo!include(level1, { values: { paramX:"Baz", paramY: "{{paramX}}{{paramX}}FooBar" }})', 'FooBarBazBazFooBar', {
         level1: 'Bar{{ paramY || Foo }}'
       });
     });
-    
+
     it('should replace one param inside other param at second level file', function () {
       test('Foo!include(level1, { values: { param1:"Baz", param2: "{{param1}}" }})', 'FooBarBaz', {
         level1: '!include(level2)',
         level2: 'Bar{{ param2 }}'
       });
     });
-    
+
     it('should replace one param inside other param at second level file (the inside param is defined at second level)', function () {
       test('Foo!include(level1, { values: { param1:"Baz"}})', 'FooBarBaz', {
         level1: '!include(level2, { values: {param2: "{{param1}}" }})',
         level2: 'Bar{{ param2 }}'
       });
     });
-    
+
     it('should replace one param inside other param inside other parem at first level file', function () {
       test('Foo!include(level1, { values: { param1:"Baz", param2: "{{param1}}", param3: "{{param2}}" }})', 'FooBarBaz', {
         level1: 'Bar{{ param3 }}'
       });
     });
-    
 
     describe('space and lineBreak tests', function () {
       it('should keep spaces of top file', function () {
@@ -345,27 +344,107 @@ describe('file-composer tests', function () {
         });
       });
       it('can receive parameters', function () {
-        test('Foo!include(level1, { values: {fruit: "{{!fruitGen2 Apple Orange Pear}}" }})', 'FooAppleOrangePear', {
+        test('Foo!include(level1, { values: {fruit: "{{!each Apple Orange Pear}}" }})', 'FooAppleOrangePear', {
           level1: '{{fruit}}'
         });
       });
       it('can receive parameters at second level', function () {
-        test('Foo!include(level1, { values: {fruit: "{{!fruitGen2 Apple Orange Pear}}" }})', 'FooAppleOrangePear', {
+        test('Foo!include(level1, { values: {fruit: "{{!each Apple Orange Pear}}" }})', 'FooAppleOrangePear', {
           level1: '!include(level2)',
           level2: '{{fruit}}'
         });
       });
       it('can use evaluable expressions', function () {
-        test('Foo!include(level1, { values: {fruit: "{{!fruitGen2 Apple Orange Pear}}" }})', 'FooApple1Orange1Pear1', {
+        test('Foo!include(level1, { values: {fruit: "{{!each Apple Orange Pear}}" }})', 'FooApple1Orange1Pear1', {
           level1: '!include(level2)',
           level2: '!eval("{{fruit}}1")_eval'
         });
       });
       it('can receive parameterized parameters at second level', function () {
         test('Foo!include(level1, {values: { anotherFruit: "Melon" } })', 'FooAppleOrangePearMelon', {
-          level1: '!include(level2, { values: {fruit: "{{!fruitGen2 Apple Orange Pear {{anotherFruit}} }}" }})',
+          level1: '!include(level2, { values: {fruit: "{{!each Apple Orange Pear {{anotherFruit}} }}" }})',
           level2: '{{fruit}}'
         });
+      });
+      it('should use multiple gens in the same level', function () {
+        test('Foo!include(level1, { values: {fruit: "{{!each Apple Orange Pear}}{{!each 1 2 3}}" }})', 'FooAppleOrangePear123', {
+          level1: '{{fruit}}'
+        });
+      });
+      it('should make a cross product when multiple generators are used in different levels (version 1)', function () {
+        test('Foo!include(level1, { values: {fruit: "{{!each Apple Orange Pear}}" }})', 'FooApple123Orange123Pear123', {
+          level1: '{{fruit}}!include(level2, { values: {number: "{{!each 1 2 3}}" }})',
+          level2: '{{number}}'
+        });
+      });
+      it('should make a cross product when multiple generators are used in different levels (version 2)', function () {
+        test('Foo!include(level1, { values: {fruit: "{{!each Apple Orange Pear}}" }})', 'FooApple1Apple2Apple3Orange1Orange2Orange3Pear1Pear2Pear3', {
+          level1: '!include(level2, { values: {number: "{{!each 1 2 3}}" }})',
+          level2: '{{fruit}}{{number}}'
+        });
+      });
+    });
+  });
+  describe('test conditional include with if', function () {
+    it('should not include when "if" parameter is false', function () {
+      test('Foo!include(level1, { if: false })', 'Foo', {
+        level1: 'Bar'
+      });
+    });
+  
+    it('should not include when "if" parameter is true', function () {
+      test('Foo!include(level1, { if: true })', 'FooBar', {
+        level1: 'Bar'
+      });
+    });
+    it('should not include when "if" expression is false', function () {
+      test('Foo!include(level1, { if: "4 * 2 % 2 !== 0" })', 'Foo', {
+        level1: 'Bar'
+      });
+    });
+    it('should include when "if" expression is true', function () {
+      test('Foo!include(level1, { if: "4 * 2 % 2 === 0" })', 'FooBar', {
+        level1: 'Bar'
+      });
+    });
+    it('should not include when "if" expression is falsy', function () {
+      test('Foo!include(level1, { if: "NaN" })', 'Foo', {
+        level1: 'Bar'
+      });
+    });
+    it('should include when "if" expression is truthy', function () {
+      test('Foo!include(level1, { if: 1 })', 'FooBar', {
+        level1: 'Bar'
+      });
+    });
+    it('should not include when "if" is a false param value', function () {
+      test('Foo!include(level1, { if: "{{inc}}", values: { inc: "false"}})', 'Foo', {
+        level1: 'Bar'
+      });
+    });
+    it('should include when "if" is a true param value', function () {
+      test('Foo!include(level1, { if: "{{inc}}", values: { inc: "true"}})', 'FooBar', {
+        level1: 'Bar'
+      });
+    });
+    it('should not include when "if" is a faly param value', function () {
+      test('Foo!include(level1, { if: "{{inc}}", values: { inc: "NaN"}})', 'Foo', {
+        level1: 'Bar'
+      });
+    });
+    it('should include when "if" is a truthy param value', function () {
+      test('Foo!include(level1, { if: "{{inc}}", values: { inc: 1}})', 'FooBar', {
+        level1: 'Bar'
+      });
+    });
+    it('should work with generator values', function () {
+      test('Foo!include(level1, { if: "{{number}} % 2 == 0", values: { number: "{{!each 1 2 3 4 5 6 7 8 9 10}}" }})', 'FooBar2Bar4Bar6Bar8Bar10', {
+        level1: 'Bar{{number}}'
+      });
+    });
+    it('should work with generator values and multiple params', function () {
+      test('Foo!include(level1, { if: "{{number}} % {{div}} == 0", values: {div: 2, number: "{{!each 1 2 3 4 5 6 7 8 9 10}}" }})', 'FooBar2Bar4Bar6Bar8Bar10', {
+        level1: 'Bar{{number}}'
       });
     });
   });
